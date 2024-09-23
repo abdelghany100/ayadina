@@ -41,7 +41,6 @@ module.exports.registerUserCtr = catchAsyncErrors(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
-    job: req.body.job,
   });
 
   await user.save();

@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema(
     },
     job : {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
@@ -117,7 +117,7 @@ function validateRegisterUser(obj) {
     phone: joi.string().trim().required(),
     location: joi.string().trim().required(),
     city: joi.string().trim().required(),
-    job: joi.string().trim().required(),
+    // job: joi.string().trim().required(),
   });
   return Schema.validate(obj);
 }
