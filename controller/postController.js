@@ -62,19 +62,19 @@ module.exports.getAllPostCtrl = catchAsyncErrors(async (req, res, next) => {
   const { pageNumber, category } = req.query;
   let posts;
   if (pageNumber) {
-    posts = await Post.find({ user: req.body.id })
+    posts = await Post.find({ user: req.user.id })
       .skip((pageNumber - 1) * POST_PER_PAGE)
       .limit(PLOG_PER_PAGE)
       .sort({ createdAt: -1 })
       .populate("user")
       .populate("comments")
   } else if (category) {
-    posts = await Post.find({ user: req.body.id, category })
+    posts = await Post.find({ user: req.user.id, category })
       .sort({ createdAt: -1 })
       .populate("user")
       .populate("comments")
  } else {
-    posts = await Post.find({ user: req.body.id })
+    posts = await Post.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .populate("user")
       .populate("comments")

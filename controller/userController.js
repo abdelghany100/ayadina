@@ -60,7 +60,7 @@ const catchAsyncErrors = require("../utils/catchAsyncErrors");
     }
 
     // البحث عن المستخدمين بناءً على الفلتر
-    const users = await User.find(filter).select("location job city");
+    const users = await User.find(filter).select("location job city").populate("posts")
 
     // إذا لم يتم العثور على مستخدمين
     if (!users || users.length === 0) {
