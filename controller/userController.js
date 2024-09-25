@@ -56,17 +56,18 @@ const catchAsyncErrors = require("../utils/catchAsyncErrors");
     }
 
     if (job) {
-      filter.job = job;
+      filter.jobs = { $in: [job] };   
     }
 
     // البحث عن المستخدمين بناءً على الفلتر
-    const users = await User.find(filter).select("location job city").populate("posts")
+    const users = await User.find(filter).select("location job city").populate("posts").populate("jobs");
 
     // إذا لم يتم العثور على مستخدمين
     if (!users || users.length === 0) {
       return next(new AppError("No users found with the given criteria", 404));
     }
 
+    console.log(filter)
     // إرجاع النتيجة
     return res.status(200).json({
       status: "SUCCESS",

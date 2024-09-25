@@ -35,7 +35,12 @@ const PostSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User"
       }
-  ]
+  ],
+  job : {
+    type: String,
+    required: true,
+    trim: true,
+  },
   },
   {
     timestamps: true,
@@ -68,8 +73,9 @@ PostSchema.pre(/^find/, function (next) {
 // validate Create post
 function validateCreatePost(obj) {
   const Schema = Joi.object({
-    title: Joi.string().trim().min(2).max(200).required(),
-    description: Joi.string().trim().min(10).required(),
+    title: Joi.string().trim().required(),
+    description: Joi.string().trim().required(),
+    job: Joi.string().trim().required(),
   });
   return Schema.validate(obj);
 }

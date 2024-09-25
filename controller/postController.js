@@ -8,6 +8,7 @@ const {
 const { Comment } = require("../models/Comment");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const AppError = require("../utils/AppError");
+const { User } = require("../models/User");
 
 /**-------------------------------------
  * @desc   Create new post
@@ -40,7 +41,12 @@ module.exports.createPostCtrl = catchAsyncErrors(async (req, res, next) => {
     image: {
       url: imagePath,
     },
+    job: req.body.job
   });
+  const user = await User.findById(req.user.id);
+  if (user) {
+    user.jobs.push(req.body.job); // Push the post id to the jobs array in the user schema
+    await user.save({ validateBeforeSave: false });  }
 
   res.status(201).json({
     status: "SUCCESS",
