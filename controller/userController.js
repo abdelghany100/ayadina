@@ -41,11 +41,10 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
-module.exports.getAllUserByFilterCtr = catchAsyncErrors(
+ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
-    const { city, location, job } = req.body; // استخراج القيم من req.body
+    const { city, location, job } = req.body;
 
-    // إعداد كائن الفلترة بناءً على المدخلات
     let filter = {};
 
     if (city) {
@@ -62,21 +61,33 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
 
     // البحث عن المستخدمين بناءً على الفلتر
     const users = await User.find(filter)
-      .select("location job city")
-      .populate("posts")
-      .populate("jobs");
+      .select("location jobs city")
+      .populate({
+        path: "posts",
+        select: "image", // جلب فقط الصور من البوستات
+      });
 
     // إذا لم يتم العثور على مستخدمين
     if (!users || users.length === 0) {
       return next(new AppError("No users found with the given criteria", 404));
     }
 
+    // تعديل استجابة المستخدمين لتجميع الصور في array واحد
+    const usersWithImages = users.map((user) => {
+      const images = user.posts.map((post) => post.image.url);
+
+      return {
+        ...user.toObject(), 
+        images, // 
+      };
+    });
+
     // إرجاع النتيجة
     return res.status(200).json({
       status: "SUCCESS",
       message: "Users found",
-      length: users.length, // عدد المستخدمين
-      data: users, // إرجاع بيانات المستخدمين
+      length: usersWithImages.length,
+      data: usersWithImages, // إرجاع المستخدمين مع الصور المدمجة
     });
   }
 );
