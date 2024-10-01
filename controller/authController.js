@@ -81,6 +81,10 @@ module.exports.loginUserCtr = catchAsyncErrors(async (req, res, next) => {
   if (!isPasswordMatch) {
     return next(new AppError("invalid email or Password", 404));
   }
+  user.password = undefined;
+  user.passwordConfirm = undefined;
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpire = undefined;
 
   //@TODO - sending email (verify account if not verified)
   const token = user.generateAuthToken();
