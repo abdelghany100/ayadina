@@ -179,7 +179,7 @@ module.exports.deleteUserCtr = catchAsyncErrors(async (req, res, next) => {
 module.exports.getSingleUserCtr = catchAsyncErrors(async (req, res, next) => {
   const userId = req.params.id;
 
-  const user = await User.findById(userId).select("-password -passwordConfirm");
+  const user = await User.findById(userId).populate("posts").select("-password -passwordConfirm")
 
   if (!user) {
     return next(new AppError("User not found", 404));
