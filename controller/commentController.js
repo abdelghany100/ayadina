@@ -48,7 +48,7 @@ module.exports.createCommentCtrl = catchAsyncErrors(async (req, res, next) => {
  * @access private (only admin)
  -------------------------------------*/
 module.exports.GetAllCommentsCtrl = catchAsyncErrors(async (req, res, next) => {
-  const comments = await Comment.find().populate("user", ["-password"]);
+  const comments = await Comment.find({postId:req.body.postId}).populate("user", ["-password"]);
 
   res.status(200).json({
     status: "SUCCESS",
