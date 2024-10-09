@@ -19,11 +19,12 @@ const router = require("express").Router();
 router
   .route("/")
   .post(verifyToken, createCommentCtrl)
-  .get(verifyToken, GetAllCommentsCtrl);
 
 // /api/comments/:id
 router
   .route("/:id")
+  .get(verifyToken, GetAllCommentsCtrl)
+
   .delete(validateObjectid, verifyToken, deleteCommentCtrl)
   .patch(validateObjectid, verifyToken, updateCommentCtrl);
 
