@@ -4,6 +4,7 @@ const {
   deleteCategory,
   getCategory,
   getAllCategories,
+  insertCategories,
 } = require("../controller/categoryController");
 const {
   verifyTokenAndAdmin,
@@ -22,5 +23,6 @@ router
   .delete(verifyTokenAndAdmin, deleteCategory)
   .get(verifyToken, getCategory);
 
+router.post("/bulk", verifyTokenAndAdmin, insertCategories);
 
 module.exports = router;

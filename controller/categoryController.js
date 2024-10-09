@@ -107,3 +107,30 @@ module.exports.getAllCategories = catchAsyncErrors(async (req, res, next) => {
     data: { categories },
   });
 });
+
+
+/**-------------------------------------
+ * @desc   Insert categories into database
+ * @route  /api/v1/category/bulk
+ * @method POST
+ * @access Private (Only admin)
+ -------------------------------------*/
+module.exports.insertCategories = catchAsyncErrors(async (req, res, next) => {
+  const categories = req.body.categories; // Expecting an array of categories from the request body
+
+  if (!categories || categories.length === 0) {
+    return next(new AppError("No categories provided", 400));
+  }
+
+  // Create new categories in bulk
+  const insertedCategories = await Category.insertMany(
+    categories.map((category) => ({ name: category }))
+  );
+
+  res.status(201).json({
+    status: "SUCCESS",
+    message: "Categories added successfully",
+    length: insertedCategories.length,
+    data: insertedCategories,
+  });
+});
