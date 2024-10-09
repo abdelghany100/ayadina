@@ -12,7 +12,7 @@ const {
 } = require("../middlewares/verifyToken");
 
 const router = require("express").Router();
-
+console.log("done")
 router
   .route("/")
   .post(verifyTokenAndAdmin, createNewCategory)
