@@ -59,6 +59,8 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
       filter.jobs = { $in: [job] };
     }
 
+    filter.jobs = { $exists: true, $ne: [] };
+
     // البحث عن المستخدمين بناءً على الفلتر
     const users = await User.find(filter)
       .select("location jobs city")
