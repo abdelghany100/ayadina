@@ -39,6 +39,7 @@ app.use("/api/v1/posts", require("./routes/postRoute"));
 app.use("/api/v1/comments", require("./routes/commentRoute"));
 app.use("/api/v1/user", require("./routes/userRoute"));
 app.use("/api/v1/category", require("./routes/categoryRoute"))
+app.use("/api/v1/location", require("./routes/locationRoute"))
 
 app.use(notFound);
 
