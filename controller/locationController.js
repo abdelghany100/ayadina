@@ -87,18 +87,22 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
     data: { location },
   });
 });
-
 /**-------------------------------------
  * @desc   Get all locations
  * @router /api/v1/location
  * @method GET
  * @access public
  -------------------------------------*/
-module.exports.getAllLocations = catchAsyncErrors(async (req, res, next) => {
+ module.exports.getAllLocations = catchAsyncErrors(async (req, res, next) => {
   const locations = await Location.find();
+
+  // Create arrays for cities and districts
+  const cities = locations.map((location) => location.city);
+  const districts = locations.map((location) => location.district);
+
   res.status(200).json({
     status: "SUCCESS",
     results: locations.length,
-    data: { locations },
+    data: { cities, districts },
   });
 });

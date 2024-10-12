@@ -41,7 +41,7 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
- module.exports.getAllUserByFilterCtr = catchAsyncErrors(
+module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
     const { city, location, job } = req.body;
 
@@ -77,8 +77,8 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
       const images = user.posts.map((post) => post.image.url);
 
       return {
-        ...user.toObject(), 
-        images, // 
+        ...user.toObject(),
+        images, //
       };
     });
 
@@ -179,7 +179,9 @@ module.exports.deleteUserCtr = catchAsyncErrors(async (req, res, next) => {
 module.exports.getSingleUserCtr = catchAsyncErrors(async (req, res, next) => {
   const userId = req.params.id;
 
-  const user = await User.findById(userId).populate("posts").select("-password -passwordConfirm")
+  const user = await User.findById(userId)
+    .populate("posts")
+    .select("-password -passwordConfirm");
 
   if (!user) {
     return next(new AppError("User not found", 404));
@@ -189,5 +191,18 @@ module.exports.getSingleUserCtr = catchAsyncErrors(async (req, res, next) => {
     status: "SUCCESS",
     message: "User fetched successfully",
     data: { user },
+  });
+});
+module.exports.getAllUserCtr = catchAsyncErrors(async (req, res, next) => {
+  // const userId = req.params.id;
+
+  const users = await User.find()
+    .populate("posts")
+    .select("-password -passwordConfirm");
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "User fetched successfully",
+    data: { users },
   });
 });

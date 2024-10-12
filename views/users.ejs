@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة التحكم - المستخدمون</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <style>
+        /* تخصيصات إضافية للجدول */
+        th {
+            background-color: #4A5568; /* لون خلفية رأس الجدول */
+        }
+
+        tr:hover {
+            background-color: #EDF2F7; /* تغيير لون الصف عند التمرير */
+        }
+
+        /* تخصيص الأزرار */
+        button {
+            transition: background-color 0.3s ease; /* تأثير الانتقال عند تغيير اللون */
+        }
+
+        button:hover {
+            opacity: 0.8; /* تقليل الشفافية عند التمرير */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 text-white h-screen p-4">
+        <h2 class="text-lg font-bold">لوحة التحكم</h2>
+        <ul class="mt-4">
+            <li><a href="/api/v1/dashboard/users" class="block py-2 hover:bg-gray-700">إدارة المستخدمين</a></li>
+            <li><a href="/api/v1/dashboard/category" class="block py-2 hover:bg-gray-700">إدارة الفئات</a></li>
+        </ul>
+    </aside>
+
+    <div class="flex-1 p-6">
+        <div class="container mx-auto mt-10">
+            <h1 class="text-2xl text-centerof font-bold mb-4">إدارة المستخدمين</h1>
+            <p id="userCount" class="text-center mb-4 text-lg font-semibold"></p>
+
+            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead>
+                    <tr class="text-white">
+                        <th class="py-3 px-4 text-right">الاسم</th>
+                        <th class="py-3 px-4 text-right">البريد الإلكتروني</th>
+                        <th class="py-3 px-4 text-right">رقم الهاتف</th>
+                        <th class="py-3 px-4 text-right">العنوان</th>
+                        <th class="py-3 px-4 text-right">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    <!-- سيتم إضافة المستخدمين هنا باستخدام JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // جلب جميع المستخدمين من API مع تضمين التوكن
+        async function fetchUsers() {
+            try {
+                const token = localStorage.getItem('token'); // افتراضًا أن التوكن مخزن في localStorage
+
+                const response = await fetch('/api/v1/user', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // إضافة التوكن إلى الهيدر
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.status === "SUCCESS") {
+                    const userTable = document.getElementById('userTable');
+                    userTable.innerHTML = '';
+
+                    data.data.users.forEach(user => {
+                        // عرض معلومات المستخدم
+                        userTable.innerHTML += `
+                            <tr class="border-b">
+                                <td class="py-2 px-4 text-right">${user.name}</td>
+                                <td class="py-2 px-4 text-right">${user.email}</td>
+                                <td class="py-2 px-4 text-right">${user.phone}</td>
+                                <td class="py-2 px-4 text-right">${user.city}</td>
+                                <td class="py-2 px-4 text-right">
+                                    <button onclick="deleteUser('${user.id}')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
+                                        حذف
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="p-4">
+                                    <button onclick="toggleVisibility('jobs-${user.id}', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="jobs-button-${user.id}">
+                                        عرض الوظائف
+                                    </button>
+                                    <div id="jobs-${user.id}" class="hidden bg-gray-100 p-4 rounded shadow">
+                                        <h4 class="font-bold">وظائف:</h4>
+                                        <ul class="list-disc pl-5">
+                                            ${user.jobs.length > 0 ? user.jobs.map(job => `<li>${job}</li>`).join('') : '<li>لا توجد وظائف متاحة</li>'}
+                                        </ul>
+                                    </div>
+                                    <button onclick="toggleVisibility('posts-${user.id}', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="posts-button-${user.id}">
+                                        عرض البوستات
+                                    </button>
+                                    <div id="posts-${user.id}" class="hidden bg-gray-100 p-4 rounded shadow">
+                                        <h4 class="font-bold">البوستات:</h4>
+                                        <ul class="list-disc pl-5">
+                                            ${user.posts.length > 0 ? user.posts.map(post => `
+                                                <li class="mb-2">
+                                                    <strong>${post.title}</strong>: ${post.description}
+                                                    <br/>
+                                                    <img src="${post.image.url}" alt="${post.title}" class="w-32 h-32 object-cover rounded mt-2" />
+                                                </li>
+                                            `).join('') : '<li>لا توجد بوستات متاحة</li>'}
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                // console.log(data.data.users.length)
+                document.getElementById('userCount').innerText = `عدد المستخدمين: ${data.data.users.length}`;
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        function toggleVisibility(elementId, button) {
+            const element = document.getElementById(elementId);
+            element.classList.toggle('hidden');
+            button.innerText = element.classList.contains('hidden') ? 'عرض الوظائف' : 'إخفاء الوظائف';
+        }
+
+        fetchUsers(); // استدعاء دالة جلب المستخدمين عند تحميل الصفحة
+    </script>
+</body>
+</html>

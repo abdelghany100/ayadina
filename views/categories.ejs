@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الفئات</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* تخصيصات إضافية */
+        th {
+            background-color: #4A5568; /* لون خلفية رأس الجدول */
+        }
+
+        tr:hover {
+            background-color: #EDF2F7; /* تغيير لون الصف عند التمرير */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 text-white h-screen p-4">
+        <h2 class="text-lg font-bold">لوحة التحكم</h2>
+        <ul class="mt-4">
+            <li><a href="/api/v1/dashboard/users" class="block py-2 hover:bg-gray-700">إدارة المستخدمين</a></li>
+            <li><a href="/api/v1/dashboard/category" class="block py-2 hover:bg-gray-700">إدارة الفئات</a></li>
+        </ul>
+    </aside>
+
+    <div class="flex-1 p-6">
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-2xl font-bold mb-6 text-center">إدارة الفئات</h1>
+
+            <!-- إضافة فئة جديدة -->
+            <div class="mb-4 flex">
+                <input type="text" id="newCategory" placeholder="أدخل اسم الفئة" class="border border-gray-300 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button id="addCategoryBtn" class="mt-2 bg-blue-500 text-white rounded p-2 ml-2 hover:bg-blue-600">إضافة فئة</button>
+            </div>
+            <p id="categoriesCount" class="text-center mb-4 text-lg font-semibold"></p>
+
+            <!-- جدول عرض الفئات -->
+            <table class="min-w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="py-2 px-4 border-b text-right text-white">اسم الفئة</th>
+                        <th class="py-2 px-4 border-b text-right text-white">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTable">
+                    <!-- سيتم ملء البيانات هنا باستخدام JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // دالة لتحميل الفئات من السيرفر
+        async function loadCategories() {
+            const response = await fetch('/api/v1/category', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'), // استبدلها بالرمز الخاص بك
+                },
+            });
+            const data = await response.json();
+            const categoriesTable = document.getElementById('categoriesTable');
+            categoriesTable.innerHTML = '';
+
+            data.data.categories.forEach(category => {
+                categoriesTable.innerHTML += `
+                    <tr>
+                        <td class="py-2 px-4 border-b text-right">${category.name}</td>
+                        <td class="py-2 px-4 border-b text-right">
+                            <button class="bg-yellow-500 text-white rounded p-1 hover:bg-yellow-600 transition duration-300" onclick="updateCategory('${category._id}')">تحديث</button>
+                            <button class="bg-red-500 text-white rounded p-1 hover:bg-red-600 transition duration-300 ml-2" onclick="deleteCategory('${category._id}')">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('categoriesCount').innerText = `عدد الفئات: ${data.data.categories.length}`;
+
+        }
+
+        // دالة لإضافة فئة جديدة
+        document.getElementById('addCategoryBtn').addEventListener('click', async () => {
+            const categoryName = document.getElementById('newCategory').value;
+
+            const response = await fetch('/api/v1/category', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'), // استبدلها بالرمز الخاص بك
+                },
+                body: JSON.stringify({ category: categoryName }),
+            });
+
+            const data = await response.json();
+            alert(data.message);
+            document.getElementById('newCategory').value = '';
+
+            loadCategories(); // إعادة تحميل الفئات بعد الإضافة
+        });
+
+        // دالة لتحديث فئة
+        async function updateCategory(id) {
+            const newName = prompt("أدخل الاسم الجديد للفئة:");
+            if (newName) {
+                const response = await fetch(`/api/v1/category/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'), // استبدلها بالرمز الخاص بك
+                    },
+                    body: JSON.stringify({ category: newName }),
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadCategories(); // إعادة تحميل الفئات بعد التحديث
+            }
+        }
+
+        // دالة لحذف فئة
+        async function deleteCategory(id) {
+            const confirmDelete = confirm("هل أنت متأكد أنك تريد حذف هذه الفئة؟");
+            if (confirmDelete) {
+                const response = await fetch(`/api/v1/category/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'), // استبدلها بالرمز الخاص بك
+                    },
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadCategories(); // إعادة تحميل الفئات بعد الحذف
+            }
+        }
+
+        // تحميل الفئات عند تحميل الصفحة
+        loadCategories();
+    </script>
+</body>
+</html>

@@ -9,7 +9,9 @@ const { errorHandler, notFound } = require("./middlewares/error");
 const path = require("path");
 
 const app = express();
-
+// إعداد محرك القوالب EJS
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views")); // إعداد مجلد القوالب
 const DB = process.env.DATABASE_URI.replace("<USER>", process.env.DATABASE_USER)
   .replace("<PASSWORD>", process.env.DATABASE_PASSWORD)
   .replace("<DATABASENAME>", process.env.DATABASE_NAME);
@@ -32,6 +34,7 @@ app.use(cors());
 app.use(compression());
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // لإتاحة تحليل البيانات من نماذج HTML
 
 // Routes
 app.use("/api/v1/auth", require("./routes/authRoute"));
@@ -40,6 +43,7 @@ app.use("/api/v1/comments", require("./routes/commentRoute"));
 app.use("/api/v1/user", require("./routes/userRoute"));
 app.use("/api/v1/category", require("./routes/categoryRoute"))
 app.use("/api/v1/location", require("./routes/locationRoute"))
+app.use("/api/v1/dashboard", require("./routes/dashboardRoute"))
 
 app.use(notFound);
 

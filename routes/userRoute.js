@@ -5,6 +5,7 @@ const {
   deleteUserCtr,
   getSingleUserCtr,
   updateProfileImageCtr,
+  getAllUserCtr,
 } = require("../controller/userController");
 const photoUpload = require("../middlewares/photoUpload");
 const {
@@ -16,7 +17,7 @@ const router = require("express").Router();
 
 router.route("/get-data-search").get(verifyToken, getDataForSearchCtr);
 router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr); 
-
+router.get("/" , verifyTokenAndAdmin , getAllUserCtr)
 router
   .route("/:id")
   .patch(verifyToken, updateUserCtr)
