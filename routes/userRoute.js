@@ -6,6 +6,7 @@ const {
   getSingleUserCtr,
   updateProfileImageCtr,
   getAllUserCtr,
+  removeJobCtr,
 } = require("../controller/userController");
 const photoUpload = require("../middlewares/photoUpload");
 const {
@@ -23,6 +24,7 @@ router
   .patch(verifyToken, updateUserCtr)
   .delete(verifyTokenAndAdmin, deleteUserCtr)
   .get(verifyToken, getSingleUserCtr);
+router.route("/removeJob/:id").delete(verifyToken, removeJobCtr);
 
 router
   .route("/profile-photo")

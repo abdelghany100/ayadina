@@ -41,12 +41,18 @@ module.exports.createPostCtrl = catchAsyncErrors(async (req, res, next) => {
     image: {
       url: imagePath,
     },
-    job: req.body.job
+    job: req.body.job,
   });
   const user = await User.findById(req.user.id);
   if (user) {
-    user.jobs.push(req.body.job); // Push the post id to the jobs array in the user schema
-    await user.save({ validateBeforeSave: false });  }
+    // Check if the job already exists in the user's jobs array
+    if (!user.jobs.includes(req.body.job)) {
+      // If the job does not exist, push it to the jobs array
+      user.jobs.push(req.body.job);
+      await user.save({ validateBeforeSave: false });
+    }
+    // If the job exists, do nothing (do not add it again)
+  }
 
   res.status(201).json({
     status: "SUCCESS",
@@ -73,17 +79,17 @@ module.exports.getAllPostCtrl = catchAsyncErrors(async (req, res, next) => {
       .limit(PLOG_PER_PAGE)
       .sort({ createdAt: -1 })
       .populate("user")
-      .populate("comments")
+      .populate("comments");
   } else if (category) {
     posts = await Post.find({ user: req.user.id, category })
       .sort({ createdAt: -1 })
       .populate("user")
-      .populate("comments")
- } else {
+      .populate("comments");
+  } else {
     posts = await Post.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .populate("user")
-      .populate("comments")
+      .populate("comments");
   }
 
   res.status(200).json({
@@ -164,10 +170,8 @@ module.exports.updatePostCtr = catchAsyncErrors(async (req, res, next) => {
     return next(new AppError("Post Not Found", 404));
   }
 
- 
-  if (req.user.id !==post.user._id.toString()) {
-    return next(new AppError( "access denied , forbidden" , 403));
-
+  if (req.user.id !== post.user._id.toString()) {
+    return next(new AppError("access denied , forbidden", 403));
   }
 
   const updatedPost = await Post.findByIdAndUpdate(
@@ -207,8 +211,7 @@ module.exports.updatePostImageCtr = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (req.user.id !== post.user._id.toString()) {
-    return next(new AppError("access denied , forbidden"   , 403));
-
+    return next(new AppError("access denied , forbidden", 403));
   }
   const imagePathOld = path.join(__dirname, "..", post.image.url);
   fs.unlinkSync(imagePathOld);

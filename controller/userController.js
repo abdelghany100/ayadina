@@ -41,7 +41,7 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
- module.exports.getAllUserByFilterCtr = catchAsyncErrors(
+module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
     const { location, job, city } = req.query;
 
@@ -72,7 +72,9 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
 
     // إذا لم يتم العثور على أي مستخدمين
     if (!users || users.length === 0) {
-      return next(new AppError("No users found with the specified filters", 404));
+      return next(
+        new AppError("No users found with the specified filters", 404)
+      );
     }
 
     // استخراج المواقع، الوظائف والمدن بدون تكرار
@@ -81,7 +83,9 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
     const cities = [...new Set(users.map((user) => user.city))];
 
     // تصفية المستخدمين الذين لديهم وظائف فقط
-    const usersWithJobs = users.filter((user) => user.jobs && user.jobs.length > 0);
+    const usersWithJobs = users.filter(
+      (user) => user.jobs && user.jobs.length > 0
+    );
 
     // تعديل استجابة المستخدمين لتجميع الصور في array واحد
     const usersWithImages = usersWithJobs.map((user) => {
@@ -220,5 +224,40 @@ module.exports.getAllUserCtr = catchAsyncErrors(async (req, res, next) => {
     status: "SUCCESS",
     message: "User fetched successfully",
     data: { users },
+  });
+});
+
+
+module.exports.removeJobCtr = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.params.id; // Assume user is authenticated
+  const { jobName } = req.body; // Expect job name in the request body
+
+  // Find the user by ID
+  const user = await User.findById(userId).select("-password -passwordConfirm");
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  // Check if the job exists in the user's jobs array
+  if (!user.jobs.includes(jobName)) {
+    return next(new AppError("Job not found in user's jobs list", 400));
+  }
+
+  // Remove the job from the jobs array
+  user.jobs = user.jobs.filter((job) => job !== jobName);
+
+  // Save the updated user document
+  // user.password= undefined,
+  user.passwordResetToken = undefined,
+  user.passwordResetTokenExpire = undefined
+  await user.save({ validateModifiedOnly: true }); // هذه الطريقة تتأكد من حفظ التحديثات فقط
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "Job removed successfully",
+    data: {
+      user,
+    },
   });
 });
