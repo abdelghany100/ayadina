@@ -1,4 +1,8 @@
-const { verifyTokenAndAdmin } = require("../middlewares/verifyToken");
+const { verify } = require("crypto");
+const {
+  verifyTokenAndAdmin,
+  verifyToken,
+} = require("../middlewares/verifyToken");
 
 const router = require("express").Router();
 
@@ -8,8 +12,8 @@ router.get("/category", (req, res) => {
 router.get("/login", (req, res) => {
   res.render("login"); // عرض ملف categories.ejs
 });
-router.get("/users", (req, res) => {
-  res.render("users"); // عرض ملف categories.ejs
+router.get("/users" , (req, res) => {
+  res.render("users");ؤ // عرض ملف categories.ejs
 });
 // router.get("/", (req, res) => {
 //   res.render("home"); // عرض ملف categories.ejs

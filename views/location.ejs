@@ -75,6 +75,14 @@
     </div>
 
     <script>
+      function checkToken() {
+        const token = localStorage.getItem("token");
+        console.log(token) // افتراضًا أن التوكن مخزن في localStorage
+        if (!token) {
+          // إذا لم يكن التوكن موجودًا، إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+          window.location.href = "login"; // استبدل هذا بعنوان URL الخاص بتسجيل الدخول
+        }
+      }
         // دالة لتحميل المواقع من السيرفر
         async function loadLocations() {
             const response = await fetch('/api/v1/location/dash', {
@@ -184,7 +192,7 @@
                 loadLocations(); // إعادة تحميل المواقع بعد الحذف
             }
         }
-
+        checkToken()
         // تحميل المواقع عند تحميل الصفحة
         loadLocations();
     </script>

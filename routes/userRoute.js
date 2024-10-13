@@ -16,17 +16,16 @@ const {
 const router = require("express").Router();
 
 router.route("/get-data-search").get(verifyToken, getDataForSearchCtr);
-router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr); 
-router.get("/" , verifyTokenAndAdmin , getAllUserCtr)
+router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr);
+router.get("/", verifyTokenAndAdmin, getAllUserCtr);
 router
   .route("/:id")
   .patch(verifyToken, updateUserCtr)
   .delete(verifyTokenAndAdmin, deleteUserCtr)
   .get(verifyToken, getSingleUserCtr);
 
-  router
+router
   .route("/profile-photo")
   .post(verifyToken, photoUpload.single("image"), updateProfileImageCtr);
 
 module.exports = router;
- 

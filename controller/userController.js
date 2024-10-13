@@ -41,25 +41,28 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
-module.exports.getAllUserByFilterCtr = catchAsyncErrors(
+ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
-    const { city, location, job } = req.body;
+    const { location, job, city } = req.query;
 
-    let filter = {};
-
-    if (city) {
-      filter.city = city;
-    }
+    // بناء الفلتر بناءً على القيم المرسلة في الـ query
+    const filter = {
+      jobs: { $exists: true, $ne: [] }, // المستخدمين الذين لديهم وظائف فقط
+    };
 
     if (location) {
       filter.location = location;
     }
 
     if (job) {
-      filter.jobs = { $in: [job] };
+      filter.jobs = job; // تحقق من وجود الوظيفة المحددة في الفلتر
     }
 
-    // البحث عن المستخدمين بناءً على الفلتر
+    if (city) {
+      filter.city = city;
+    }
+
+    // البحث عن المستخدمين بناءً على الفلاتر
     const users = await User.find(filter)
       .select("location jobs city")
       .populate({
@@ -67,20 +70,33 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
         select: "image", // جلب فقط الصور من البوستات
       });
 
-    // إذا لم يتم العثور على مستخدمين
+    // إذا لم يتم العثور على أي مستخدمين
     if (!users || users.length === 0) {
-      return next(new AppError("No users found with the given criteria", 404));
+      return next(new AppError("No users found with the specified filters", 404));
     }
 
+    // استخراج المواقع، الوظائف والمدن بدون تكرار
+    const locations = [...new Set(users.map((user) => user.location))];
+    const jobs = [...new Set(users.map((user) => user.jobs).flat())]; // استخدم .flat() لتجميع جميع الوظائف من المصفوفة
+    const cities = [...new Set(users.map((user) => user.city))];
+
+    // تصفية المستخدمين الذين لديهم وظائف فقط
+    const usersWithJobs = users.filter((user) => user.jobs && user.jobs.length > 0);
+
     // تعديل استجابة المستخدمين لتجميع الصور في array واحد
-    const usersWithImages = users.map((user) => {
+    const usersWithImages = usersWithJobs.map((user) => {
       const images = user.posts.map((post) => post.image.url);
 
       return {
         ...user.toObject(),
-        images, //
+        images, // تضمين مصفوفة الصور في الاستجابة
       };
     });
+
+    // إذا لم يتم العثور على مستخدمين بعد الفلترة
+    if (usersWithImages.length === 0) {
+      return next(new AppError("No users found with the given criteria", 404));
+    }
 
     // إرجاع النتيجة
     return res.status(200).json({
