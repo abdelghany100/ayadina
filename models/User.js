@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    jobs:[String],
+    jobs: [String],
     email: {
       type: String,
       required: true,

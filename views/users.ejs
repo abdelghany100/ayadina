@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>لوحة التحكم - المستخدمون</title>
+    <title>لوحة التحكم - إدارة المستخدمين</title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -11,20 +11,20 @@
     <style>
       /* تخصيصات إضافية للجدول */
       th {
-        background-color: #4a5568; /* لون خلفية رأس الجدول */
+        background-color: #4a5568;
       }
 
       tr:hover {
-        background-color: #edf2f7; /* تغيير لون الصف عند التمرير */
+        background-color: #edf2f7;
       }
 
       /* تخصيص الأزرار */
       button {
-        transition: background-color 0.3s ease; /* تأثير الانتقال عند تغيير اللون */
+        transition: background-color 0.3s ease;
       }
 
       button:hover {
-        opacity: 0.8; /* تقليل الشفافية عند التمرير */
+        opacity: 0.8;
       }
     </style>
   </head>
@@ -55,11 +55,13 @@
       </ul>
     </aside>
 
+    <!-- Main Content -->
     <div class="flex-1 p-6">
       <div class="container mx-auto mt-10">
         <h1 class="text-2xl text-center font-bold mb-4">إدارة المستخدمين</h1>
         <p id="userCount" class="text-center mb-4 text-lg font-semibold"></p>
 
+        <!-- Users Table -->
         <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead>
             <tr class="text-white">
@@ -79,124 +81,40 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-      // التحقق من وجود التوكين
+      // تحقق من وجود التوكين في التخزين المحلي
       function checkToken() {
         const token = localStorage.getItem("token");
-        console.log(token); // افتراضًا أن التوكن مخزن في localStorage
         if (!token) {
           // إذا لم يكن التوكن موجودًا، إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
-          window.location.href = "/login"; // استبدل هذا بعنوان URL الخاص بتسجيل الدخول
+          window.location.href = "/login";
         }
       }
 
-      // جلب جميع المستخدمين من API مع تضمين التوكن
+      // جلب المستخدمين من API باستخدام التوكن الموجود
       async function fetchUsers() {
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "login";
-          // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
-          return; // توقف عن التنفيذ إذا لم يكن هناك توكن
+          window.location.href = "/login"; // إعادة توجيه إذا لم يكن هناك توكن
+          return;
         }
-        try {
-          const token = localStorage.getItem("token"); // افتراضًا أن التوكن مخزن في localStorage
 
+        try {
           const response = await fetch("/api/v1/user", {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${token}`, // إضافة التوكن إلى الهيدر
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           });
 
           const data = await response.json();
 
+          // التحقق من نجاح العملية قبل عرض المستخدمين
           if (data.status === "SUCCESS") {
-            const userTable = document.getElementById("userTable");
-            userTable.innerHTML = "";
-
-            data.data.users.forEach((user) => {
-              // عرض معلومات المستخدم
-              userTable.innerHTML += `
-                            <tr class="border-b">
-                                <td class="py-2 px-4 text-right">${
-                                  user.name
-                                }</td>
-                                <td class="py-2 px-4 text-right">${
-                                  user.email
-                                }</td>
-                                <td class="py-2 px-4 text-right">${
-                                  user.phone
-                                }</td>
-                                <td class="py-2 px-4 text-right">${
-                                  user.city
-                                }</td>
-                                <td class="py-2 px-4 text-right">
-                                    <button onclick="deleteUser('${
-                                      user.id
-                                    }')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
-                                        حذف
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="p-4">
-                                    <button onclick="toggleVisibility('jobs-${
-                                      user.id
-                                    }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="jobs-button-${
-                user.id
-              }">
-                                        عرض الوظائف
-                                    </button>
-                                    <div id="jobs-${
-                                      user.id
-                                    }" class="hidden bg-gray-100 p-4 rounded shadow">
-                                        <h4 class="font-bold">وظائف:</h4>
-                                        <ul class="list-disc pl-5">
-                                            ${
-                                              user.jobs.length > 0
-                                                ? user.jobs
-                                                    .map(
-                                                      (job) => `<li>${job}</li>`
-                                                    )
-                                                    .join("")
-                                                : "<li>لا توجد وظائف متاحة</li>"
-                                            }
-                                        </ul>
-                                    </div>
-                                    <button onclick="toggleVisibility('posts-${
-                                      user.id
-                                    }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="posts-button-${
-                user.id
-              }">
-                                        عرض البوستات
-                                    </button>
-                                    <div id="posts-${
-                                      user.id
-                                    }" class="hidden bg-gray-100 p-4 rounded shadow">
-                                        <h4 class="font-bold">البوستات:</h4>
-                                        <ul class="list-disc pl-5">
-                                            ${
-                                              user.posts.length > 0
-                                                ? user.posts
-                                                    .map(
-                                                      (post) => `
-                                                <li class="mb-2">
-                                                    <strong>${post.title}</strong>: ${post.description}
-                                                    <br/>
-                                                    <img src="${post.image.url}" alt="${post.title}" class="w-32 h-32 object-cover rounded mt-2" />
-                                                </li>
-                                            `
-                                                    )
-                                                    .join("")
-                                                : "<li>لا توجد بوستات متاحة</li>"
-                                            }
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-            });
+            populateUsers(data.data.users);
           }
+
+          // تحديث عدد المستخدمين
           document.getElementById(
             "userCount"
           ).innerText = `عدد المستخدمين: ${data.data.users.length}`;
@@ -205,16 +123,109 @@
         }
       }
 
+      // دالة لعرض المستخدمين في الجدول
+      function populateUsers(users) {
+        const userTable = document.getElementById("userTable");
+        userTable.innerHTML = "";
+
+        users.forEach((user) => {
+          userTable.innerHTML += `
+            <tr class="border-b">
+              <td class="py-2 px-4 text-right">${user.name}</td>
+              <td class="py-2 px-4 text-right">${user.email}</td>
+              <td class="py-2 px-4 text-right">${user.phone}</td>
+              <td class="py-2 px-4 text-right">${user.city}</td>
+              <td class="py-2 px-4 text-right">
+                <button onclick="deleteUser('${
+                  user.id
+                }')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">حذف</button>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="5" class="p-4">
+                ${generateJobsButton(user)}
+                ${generatePostsButton(user)}
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // توليد زر الوظائف
+      function generateJobsButton(user) {
+        return `
+          <button onclick="toggleVisibility('jobs-${
+            user.id
+          }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="jobs-button-${
+          user.id
+        }">
+            عرض الوظائف
+          </button>
+          <div id="jobs-${
+            user.id
+          }" class="hidden bg-gray-100 p-4 rounded shadow">
+            <h4 class="font-bold">وظائف:</h4>
+            <ul class="list-disc pl-5">${generateListItems(
+              user.jobs,
+              "لا توجد وظائف متاحة"
+            )}</ul>
+          </div>
+        `;
+      }
+
+      // توليد زر البوستات
+      function generatePostsButton(user) {
+        return `
+          <button onclick="toggleVisibility('posts-${
+            user.id
+          }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="posts-button-${
+          user.id
+        }">
+            عرض البوستات
+          </button>
+          <div id="posts-${
+            user.id
+          }" class="hidden bg-gray-100 p-4 rounded shadow">
+            <h4 class="font-bold">البوستات:</h4>
+            <ul class="list-disc pl-5">${generatePostItems(user.posts)}</ul>
+          </div>
+        `;
+      }
+
+      // توليد قائمة العناصر
+      function generateListItems(items, emptyMessage) {
+        return items.length > 0
+          ? items.map((item) => `<li>${item}</li>`).join("")
+          : `<li>${emptyMessage}</li>`;
+      }
+
+      // توليد عناصر البوستات
+      function generatePostItems(posts) {
+        return posts.length > 0
+          ? posts
+              .map(
+                (post) => `
+                <li class="mb-2">
+                  <strong>${post.title}</strong>: ${post.description}
+                  <br/>
+                  <img src="${post.image.url}" alt="${post.title}" class="w-32 h-32 object-cover rounded mt-2" />
+                </li>`
+              )
+              .join("")
+          : "<li>لا توجد بوستات متاحة</li>";
+      }
+
+      // إظهار وإخفاء الأقسام
       function toggleVisibility(elementId, button) {
         const element = document.getElementById(elementId);
         element.classList.toggle("hidden");
         button.innerText = element.classList.contains("hidden")
-          ? "عرض الوظائف"
-          : "إخفاء الوظائف";
+          ? "عرض"
+          : "إخفاء";
       }
 
       checkToken(); // تحقق من وجود التوكين عند تحميل الصفحة
-      fetchUsers(); // استدعاء دالة جلب المستخدمين عند تحميل الصفحة
+      fetchUsers(); // جلب المستخدمين عند تحميل الصفحة
     </script>
   </body>
 </html>
