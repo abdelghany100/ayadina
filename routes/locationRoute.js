@@ -5,6 +5,7 @@ const {
   deleteLocation,
   getLocation,
   getAllLocations,
+  getLocationDash,
 } = require("../controller/locationController");
 const {
   verifyTokenAndAdmin,
@@ -17,8 +18,9 @@ const router = require("express").Router();
 router
   .route("/")
   .post(verifyTokenAndAdmin, createNewLocation) // Create a new location
-  .get(verifyToken, getAllLocations); // Get all locations
+  .get( getAllLocations); // Get all locations
 
+router.route("/dash").get(verifyTokenAndAdmin, getLocationDash); //
 router
   .route("/:id")
   .patch(verifyTokenAndAdmin, updateLocation) // Update a location

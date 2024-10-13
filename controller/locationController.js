@@ -106,3 +106,19 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
     data: { cities, districts },
   });
 });
+/**-------------------------------------
+ * @desc   Get all locations for dashboard
+ * @router /api/v1/location/dash
+ * @method GET
+ * @access public
+ -------------------------------------*/
+ module.exports.getLocationDash = catchAsyncErrors(async (req, res, next) => {
+  const locations = await Location.find();
+
+
+  res.status(200).json({
+    status: "SUCCESS",
+    results: locations.length,
+    data: { locations },
+  });
+});

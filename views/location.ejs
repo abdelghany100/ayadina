@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>إدارة المواقع</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <style>
+        th {
+            background-color: #2d3748; /* لون خلفية رأس الجدول */
+        }
+        tr:hover {
+            background-color: #edf2f7; /* تغيير لون الصف عند التمرير */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 text-white h-screen p-4 shadow-lg">
+        <h2 class="text-lg font-bold text-center mb-4">لوحة التحكم</h2>
+        <ul class="mt-4">
+            <li>
+                <a href="/api/v1/dashboard/users" class="block py-2 px-4 hover:bg-gray-700 transition duration-300">إدارة المستخدمين</a>
+            </li>
+            <li>
+                <a href="/api/v1/dashboard/category" class="block py-2 px-4 hover:bg-gray-700 transition duration-300">إدارة الفئات</a>
+            </li>
+            <li>
+                <a href="/api/v1/dashboard/location" class="block py-2 px-4 hover:bg-gray-700 transition duration-300">إدارة المواقع</a>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="flex-1 p-6">
+        <div class="container mx-auto px-4 py-8 bg-white shadow-md rounded-lg">
+            <h1 class="text-2xl font-bold mb-6 text-center text-gray-700">إدارة المواقع</h1>
+
+            <!-- إضافة موقع جديد -->
+            <div class="mb-4 flex">
+                <input
+                    type="text"
+                    id="newCity"
+                    placeholder="أدخل اسم المدينة"
+                    class="border border-gray-300 rounded-l p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                    type="text"
+                    id="newDistrict"
+                    placeholder="أدخل اسم الحي"
+                    class="border border-gray-300 rounded-l p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ml-2"
+                />
+                <button
+                    id="addLocationBtn"
+                    class="bg-blue-600 text-white rounded-r p-2 ml-2 hover:bg-blue-700 transition duration-300"
+                >
+                    إضافة موقع
+                </button>
+            </div>
+            <p id="locationsCount" class="text-center mb-4 text-lg font-semibold text-gray-600"></p>
+
+            <!-- جدول عرض المواقع -->
+            <table class="min-w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden">
+                <thead>
+                    <tr>
+                        <th class="py-2 px-4 border-b text-right text-white">المدينة</th>
+                        <th class="py-2 px-4 border-b text-right text-white">الحي</th>
+                        <th class="py-2 px-4 border-b text-right text-white">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="locationsTable">
+                    <!-- سيتم ملء البيانات هنا باستخدام JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // دالة لتحميل المواقع من السيرفر
+        async function loadLocations() {
+            const response = await fetch('/api/v1/location/dash', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                },
+            });
+
+            const data = await response.json();
+            const locationsTable = document.getElementById('locationsTable');
+            locationsTable.innerHTML = '';
+            console.log(data);
+
+            // التأكد من أن هناك بيانات مدن وأحياء متاحة
+            if (data.data && data.data.locations) {
+                data.data.locations.forEach(location => {
+                    locationsTable.innerHTML += `
+                        <tr>
+                            <td class="py-2 px-4 border-b text-right">${location.city}</td>
+                            <td class="py-2 px-4 border-b text-right">${location.district}</td>
+                            <td class="py-2 px-4 border-b text-right">
+                                <button onclick="showUpdateFields('${location._id}')" class="bg-yellow-500 text-white rounded p-1 hover:bg-yellow-600 transition duration-300">تحديث</button>
+                                <button onclick="deleteLocation('${location._id}')" class="bg-red-500 text-white rounded p-1 hover:bg-red-600 transition duration-300 ml-2">حذف</button>
+                                <div id="updateFields-${location._id}" class="hidden mt-2">
+                                    <input type="text" id="updateCity-${location._id}" placeholder="مدينة جديدة" class="border border-gray-300 rounded p-1 w-full" />
+                                    <input type="text" id="updateDistrict-${location._id}" placeholder="حي جديد" class="border border-gray-300 rounded p-1 w-full mt-1" />
+                                    <button onclick="updateLocation('${location._id}')" class="bg-green-500 text-white rounded p-1 hover:bg-green-600 transition duration-300 mt-1">تحديث</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // تحديث عدد المواقع
+                document.getElementById('locationsCount').innerText = `عدد المواقع: ${data.results}`;
+            } else {
+                console.error('Unexpected data structure:', data);
+                alert('خطأ في استرجاع البيانات');
+            }
+        }
+
+        // دالة لإضافة موقع جديد
+        document.getElementById("addLocationBtn").addEventListener("click", async () => {
+            const city = document.getElementById("newCity").value;
+            const district = document.getElementById("newDistrict").value;
+
+            const response = await fetch("/api/v1/location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+                body: JSON.stringify({ city, district }),
+            });
+
+            const data = await response.json();
+            alert(data.message);
+            document.getElementById("newCity").value = "";
+            document.getElementById("newDistrict").value = "";
+
+            loadLocations(); // إعادة تحميل المواقع بعد الإضافة
+        });
+
+        // دالة لإظهار حقول التحديث
+        function showUpdateFields(id) {
+            const updateFields = document.getElementById(`updateFields-${id}`);
+            updateFields.classList.toggle('hidden');
+        }
+
+        // دالة لتحديث موقع
+        async function updateLocation(id) {
+            const newCity = document.getElementById(`updateCity-${id}`).value;
+            const newDistrict = document.getElementById(`updateDistrict-${id}`).value;
+
+            if (newCity && newDistrict) {
+                const response = await fetch(`/api/v1/location/${id}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify({ city: newCity, district: newDistrict }),
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadLocations(); // إعادة تحميل المواقع بعد التحديث
+            } else {
+                alert("يرجى إدخال بيانات جديدة لتحديث الموقع.");
+            }
+        }
+
+        // دالة لحذف موقع
+        async function deleteLocation(id) {
+            const confirmDelete = confirm("هل أنت متأكد أنك تريد حذف هذا الموقع؟");
+            if (confirmDelete) {
+                const response = await fetch(`/api/v1/location/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                    },
+                });
+
+                const data = await response.json();
+                alert(data.message);
+                loadLocations(); // إعادة تحميل المواقع بعد الحذف
+            }
+        }
+
+        // تحميل المواقع عند تحميل الصفحة
+        loadLocations();
+    </script>
+</body>
+</html>

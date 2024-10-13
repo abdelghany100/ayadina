@@ -11,8 +11,10 @@ router.get("/login", (req, res) => {
 router.get("/users", (req, res) => {
   res.render("users"); // عرض ملف categories.ejs
 });
-router.get("/", (req, res) => {
-  res.render("home"); // عرض ملف categories.ejs
+// router.get("/", (req, res) => {
+//   res.render("home"); // عرض ملف categories.ejs
+// });
+router.get("/location", (req, res) => {
+  res.render("location"); // Render the locations.ejs view
 });
-
 module.exports = router;
