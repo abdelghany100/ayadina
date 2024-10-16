@@ -64,7 +64,7 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
 
     // البحث عن المستخدمين بناءً على الفلاتر
     const users = await User.find(filter)
-      .select("location jobs city")
+      .select("location jobs city profilePhoto")
       .populate({
         path: "posts",
         select: "image", // جلب فقط الصور من البوستات
