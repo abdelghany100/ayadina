@@ -16,7 +16,7 @@ const {
 
 const router = require("express").Router();
 
-router.route("/get-data-search").get(verifyToken, getDataForSearchCtr);
+router.route("/get-data-search").get( getDataForSearchCtr);
 router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr);
 router.get("/", verifyTokenAndAdmin, getAllUserCtr);
 router
