@@ -25,9 +25,8 @@ mongoose
     console.log(err);
   });
 
-  app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
-   
 app.use(cors());
 
 // Add compression middleware
@@ -41,10 +40,12 @@ app.use("/api/v1/auth", require("./routes/authRoute"));
 app.use("/api/v1/posts", require("./routes/postRoute"));
 app.use("/api/v1/comments", require("./routes/commentRoute"));
 app.use("/api/v1/user", require("./routes/userRoute"));
-app.use("/api/v1/category", require("./routes/categoryRoute"))
-app.use("/api/v1/location", require("./routes/locationRoute"))
-app.use("/api/v1/dashboard", require("./routes/dashboardRoute"))
-
+app.use("/api/v1/category", require("./routes/categoryRoute"));
+app.use("/api/v1/location", require("./routes/locationRoute"));
+app.use("/api/v1/dashboard", require("./routes/dashboardRoute"));
+app.get("/", (req, res) => {
+  res.send("welcome");
+});
 app.use(notFound);
 
 app.use(errorHandler);
