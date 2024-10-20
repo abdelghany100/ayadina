@@ -138,8 +138,23 @@ module.exports.deletePostCtrl = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (req.user.isAdmin || req.user.id === post.user._id.toString()) {
-    const imagePath = path.join(__dirname, "..", post.image.url);
-    fs.unlinkSync(imagePath);
+    post.image.forEach((img) => {
+      if (img.url) {
+        const imagePath = path.join(__dirname, "..", img.url);
+        
+        try {
+          // Check if the file exists before deleting
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          } else {
+            console.log("Image file does not exist.");
+          }
+        } catch (error) {
+          console.error("Error deleting image file:", error);
+          return next(new AppError("Error deleting image file", 500));
+        }
+      }
+    });
     await Post.findByIdAndDelete(req.params.id);
     await Comment.deleteMany({ postId: post._id });
 
