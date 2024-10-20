@@ -9,6 +9,7 @@ const { Comment } = require("../models/Comment");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const AppError = require("../utils/AppError");
 const { User } = require("../models/User");
+const { console } = require("inspector");
 
 /**-------------------------------------
  * @desc   Create new post
@@ -19,7 +20,9 @@ const { User } = require("../models/User");
 
 module.exports.createPostCtrl = catchAsyncErrors(async (req, res, next) => {
   // 1. validation for image
-  if (!req.file) {
+  console.log(1)
+  // console.log(req);
+  if (!req.files) {
     return next(new AppError("no image provided", 400));
   }
 
@@ -30,17 +33,16 @@ module.exports.createPostCtrl = catchAsyncErrors(async (req, res, next) => {
   }
 
   // 3. Upload photo
-  const imagePath = `/images/${req.file.filename}`;
-  //   const result = await cloudinaryUploadImage(imagePath);
+  const images = req.files.map((file) => ({
+    url: `/images/${file.filename}`,
+  })); //   const result = await cloudinaryUploadImage(imagePath);
   // 4. Create new post and save to DB
   const post = await Post.create({
     title: req.body.title,
     description: req.body.description,
     tags: req.body.tags || [],
     user: req.user.id,
-    image: {
-      url: imagePath,
-    },
+    image: images,
     job: req.body.job,
   });
   const user = await User.findById(req.user.id);

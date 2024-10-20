@@ -19,7 +19,7 @@ const {
 // /api/posts
 router
   .route("/")
-  .post(verifyToken, photoUpload.single("image"), createPostCtrl)
+  .post(verifyToken, photoUpload.array("image"), createPostCtrl)
   .get(verifyToken, getAllPostCtrl);
 
 router
@@ -30,7 +30,7 @@ router
 
 router
   .route("/update-image/:id")
-  .patch(verifyToken, photoUpload.single("image"), updatePostImageCtr);
+  .patch(verifyToken, photoUpload.array("image"), updatePostImageCtr);
 
 router.route("/like/:id").put(validateObjectid, verifyToken, toggleLikeCtrl);
 
