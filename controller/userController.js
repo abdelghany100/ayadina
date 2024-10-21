@@ -87,15 +87,15 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
       (user) => user.jobs && user.jobs.length > 0
     );
 
-    // تعديل استجابة المستخدمين لتجميع الصور في array واحد
     const usersWithImages = usersWithJobs.map((user) => {
-      const images = user.posts.map((post) => post.image.url);
-
+      const images = user.posts.map((post) => post.image).flat();
+    
       return {
         ...user.toObject(),
-        images, // تضمين مصفوفة الصور في الاستجابة
+        images, 
       };
     });
+    
 
     // إذا لم يتم العثور على مستخدمين بعد الفلترة
     if (usersWithImages.length === 0) {
