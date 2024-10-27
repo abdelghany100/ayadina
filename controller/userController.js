@@ -172,7 +172,7 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
       status: "SUCCESS",
       message: "Users found",
       length: usersWithMatchingImages.length,
-      data: usersWithMatchingImages, // إرجاع المستخدمين مع الصور المدمجة
+      data: usersWithMatchingImages,
     });
   }
 );
