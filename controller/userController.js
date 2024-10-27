@@ -111,7 +111,6 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
 //     });
 //   }
 // );
-
 module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
     const { location, job, city } = req.query;
@@ -138,7 +137,7 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
       .select("location jobs city profilePhoto")
       .populate({
         path: "posts",
-        match: job ? { job: job } : {}, // تصفية البوستات بناءً على الفئة `category`
+        match: job ? { job: job } : {}, // تصفية البوستات بناءً على الوظيفة إذا كانت محددة
         select: "image job", // جلب الصور والوظيفة فقط من البوستات
       });
 
@@ -147,12 +146,11 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
       return next(new AppError("No users found with the specified filters", 404));
     }
 
-    // دمج الصور من البوستات التي تطابق الفئة المطلوبة فقط
+    // دمج الصور من البوستات
     const usersWithImages = users.map((user) => {
-      // جلب الصور فقط من البوستات التي تتطابق وظيفتها مع الفئة
       const images = user.posts
-        .filter(post => post.job === job) // تصفية البوستات التي تحتوي على `job` مطابق للفئة
-        .flatMap(post => post.image.map(img => img.url)); // جلب الروابط للصور المطابقة فقط
+        .filter(post => !job || post.job === job) // جلب الصور من البوستات مع تطابق الوظيفة إذا كانت محددة
+        .flatMap(post => post.image.map(img => img.url)); // جلب الروابط للصور
 
       return {
         ...user.toObject(),
@@ -160,23 +158,24 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
       };
     });
 
-    // إذا لم يتم العثور على مستخدمين مع صور الفئة المحددة
-    const usersWithMatchingImages = usersWithImages.filter(user => user.images.length > 0);
+    // التحقق من وجود صور للمستخدمين
+    const usersWithImagesResult = job
+      ? usersWithImages.filter(user => user.images.length > 0)
+      : usersWithImages;
 
-    if (usersWithMatchingImages.length === 0) {
-      return next(new AppError("No users found with matching posts for the given category", 404));
+    if (usersWithImagesResult.length === 0) {
+      return next(new AppError("No users found with matching posts for the given filters", 404));
     }
 
     // إرجاع النتيجة
     return res.status(200).json({
       status: "SUCCESS",
-      message: "Users found success",
-      length: usersWithMatchingImages.length,
-      data: usersWithMatchingImages,
+      message: "Users found successfully",
+      length: usersWithImagesResult.length,
+      data: usersWithImagesResult,
     });
   }
 );
-
 
 /**-------------------------------------
  * @desc   update user profile

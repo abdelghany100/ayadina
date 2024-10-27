@@ -26,6 +26,11 @@
       button:hover {
         opacity: 0.8;
       }
+
+      /* تخصيص ارتفاع الصفوف */
+      tr {
+        height: 60px; /* يمكنك تغيير هذا الرقم حسب الحاجة */
+      }
     </style>
   </head>
   <body class="bg-gray-100 flex">
@@ -34,23 +39,13 @@
       <h2 class="text-lg font-bold">لوحة التحكم</h2>
       <ul class="mt-4">
         <li>
-          <a href="/api/v1/dashboard/users" class="block py-2 hover:bg-gray-700"
-            >إدارة المستخدمين</a
-          >
+          <a href="/api/v1/dashboard/users" class="block py-2 hover:bg-gray-700">إدارة المستخدمين</a>
         </li>
         <li>
-          <a
-            href="/api/v1/dashboard/category"
-            class="block py-2 hover:bg-gray-700"
-            >إدارة الفئات</a
-          >
+          <a href="/api/v1/dashboard/category" class="block py-2 hover:bg-gray-700">إدارة الفئات</a>
         </li>
         <li>
-          <a
-            href="/api/v1/dashboard/location"
-            class="block py-2 hover:bg-gray-700"
-            >إدارة المواقع</a
-          >
+          <a href="/api/v1/dashboard/location" class="block py-2 hover:bg-gray-700">إدارة المواقع</a>
         </li>
       </ul>
     </aside>
@@ -134,10 +129,9 @@
               <td class="py-2 px-4 text-right">${user.email}</td>
               <td class="py-2 px-4 text-right">${user.phone}</td>
               <td class="py-2 px-4 text-right">${user.city}</td>
-
             </tr>
             <tr>
-              <td colspan="5" class="p-4">
+              <td colspan="4" class="p-4">
                 ${generateJobsButton(user)}
                 ${generatePostsButton(user)}
               </td>
@@ -149,21 +143,12 @@
       // توليد زر الوظائف
       function generateJobsButton(user) {
         return `
-          <button onclick="toggleVisibility('jobs-${
-            user.id
-          }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="jobs-button-${
-          user.id
-        }">
+          <button onclick="toggleVisibility('jobs-${user.id}', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="jobs-button-${user.id}">
             عرض الوظائف
           </button>
-          <div id="jobs-${
-            user.id
-          }" class="hidden bg-gray-100 p-4 rounded shadow">
+          <div id="jobs-${user.id}" class="hidden bg-gray-100 p-4 rounded shadow">
             <h4 class="font-bold">وظائف:</h4>
-            <ul class="list-disc pl-5">${generateListItems(
-              user.jobs,
-              "لا توجد وظائف متاحة"
-            )}</ul>
+            <ul class="list-disc pl-5">${generateListItems(user.jobs, "لا توجد وظائف متاحة")}</ul>
           </div>
         `;
       }
@@ -171,16 +156,10 @@
       // توليد زر البوستات
       function generatePostsButton(user) {
         return `
-          <button onclick="toggleVisibility('posts-${
-            user.id
-          }', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="posts-button-${
-          user.id
-        }">
+          <button onclick="toggleVisibility('posts-${user.id}', this)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded mb-2" id="posts-button-${user.id}">
             عرض البوستات
           </button>
-          <div id="posts-${
-            user.id
-          }" class="hidden bg-gray-100 p-4 rounded shadow">
+          <div id="posts-${user.id}" class="hidden bg-gray-100 p-4 rounded shadow">
             <h4 class="font-bold">البوستات:</h4>
             <ul class="list-disc pl-5">${generatePostItems(user.posts)}</ul>
           </div>
@@ -200,11 +179,15 @@
           ? posts
               .map(
                 (post) => `
-                <li class="mb-2">
-                  <strong>${post.title}</strong>: ${post.description}
-                  <br/>
-                  <img src="${post.image.url}" alt="${post.title}" class="w-32 h-32 object-cover rounded mt-2" />
-                </li>`
+          <li class="mb-2">
+            <strong>${post.title}</strong>: ${post.description}
+            <br/>
+            ${post.image && post.image.length > 0
+              ? post.image.map(image => `
+                <img src="${image.url}" alt="${post.title}" class="w-32 h-32 object-cover rounded mt-2" />
+              `).join('')
+              : '<p>لا توجد صور متاحة</p>'}
+          </li>`
               )
               .join("")
           : "<li>لا توجد بوستات متاحة</li>";
