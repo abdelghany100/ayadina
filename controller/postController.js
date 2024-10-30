@@ -9,7 +9,7 @@ const { Comment } = require("../models/Comment");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const AppError = require("../utils/AppError");
 const { User } = require("../models/User");
-const { console } = require("inspector");
+// const { console } = require("inspector");
 
 /**-------------------------------------
  * @desc   Create new post
@@ -20,7 +20,7 @@ const { console } = require("inspector");
 
 module.exports.createPostCtrl = catchAsyncErrors(async (req, res, next) => {
   // 1. validation for image
-  console.log(1)
+  console.log(1);
   // console.log(req);
   if (!req.files) {
     return next(new AppError("no image provided", 400));
@@ -141,7 +141,7 @@ module.exports.deletePostCtrl = catchAsyncErrors(async (req, res, next) => {
     post.image.forEach((img) => {
       if (img.url) {
         const imagePath = path.join(__dirname, "..", img.url);
-        
+
         try {
           // Check if the file exists before deleting
           if (fs.existsSync(imagePath)) {
@@ -157,6 +157,19 @@ module.exports.deletePostCtrl = catchAsyncErrors(async (req, res, next) => {
     });
     await Post.findByIdAndDelete(req.params.id);
     await Comment.deleteMany({ postId: post._id });
+
+    const user = await User.findById(post.user);
+    // التحقق من وجود بوستات أخرى بنفس التصنيف
+    const otherPostsWithSameCategory = await Post.exists({
+      user: post.user.id,
+      job: post.job,
+    });
+
+    // حذف التصنيف من jobs إذا لم يكن هناك بوستات أخرى بنفس التصنيف
+    if (!otherPostsWithSameCategory) {
+      user.jobs = user.jobs.filter((job) => job !== post.job);
+      await user.save({ validateBeforeSave: false }); // إيقاف خاصية runValidators
+    }
 
     res.status(200).json({
       status: "SUCCESS",
