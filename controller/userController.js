@@ -134,7 +134,7 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
 
     // البحث عن المستخدمين بناءً على الفلاتر
     const users = await User.find(filter)
-      .select("location jobs city profilePhoto ")
+      .select("location jobs city profilePhoto name")
       .populate({
         path: "posts",
         match: job ? { job: job } : {}, // تصفية البوستات بناءً على الوظيفة إذا كانت محددة
