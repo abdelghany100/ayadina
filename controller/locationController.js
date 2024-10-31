@@ -122,3 +122,21 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
     data: { locations },
   });
 });
+
+module.exports.getAlldistrict = catchAsyncErrors(async (req, res, next) => {
+  const { city } = req.body;
+
+  if (!city) {
+    return res.status(400).json({ message: "City is required" });
+  }
+
+  const districts = await Location.find({ city })
+    .select("district -_id") // للحصول على الحقل district فقط بدون الـ _id
+    .lean() // لتحسين الأداء بإرجاع بيانات خفيفة بدون وظائف مرفقة
+
+  if (!districts.length) {
+    return res.status(404).json({ message: "No districts found for this city" });
+  }
+
+  res.status(200).json(districts);
+})

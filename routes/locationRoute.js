@@ -5,6 +5,7 @@ const {
   deleteLocation,
   getLocation,
   getAllLocations,
+  getAlldistrict,
   getLocationDash,
 } = require("../controller/locationController");
 const {
@@ -19,6 +20,7 @@ router
   .route("/")
   .post(verifyTokenAndAdmin, createNewLocation) // Create a new location
   .get( getAllLocations); // Get all locations
+router.route("/district").get(getAlldistrict); // Get all locations
 
 router.route("/dash").get(verifyTokenAndAdmin, getLocationDash); //
 router
