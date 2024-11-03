@@ -20,7 +20,7 @@ router.route("/get-data-search").get(verifyToken , getDataForSearchCtr);
 router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr);
 router.get("/", verifyTokenAndAdmin, getAllUserCtr);
 router
-  .route("/:id")
+  .route("/")
   .patch(verifyToken, updateUserCtr)
   .delete(verifyToken, deleteUserCtr)
   .get(verifyToken, getSingleUserCtr);
