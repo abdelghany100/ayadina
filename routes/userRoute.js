@@ -22,7 +22,7 @@ router.get("/", verifyTokenAndAdmin, getAllUserCtr);
 router
   .route("/:id")
   .patch(verifyToken, updateUserCtr)
-  .delete(verifyTokenAndAdmin, deleteUserCtr)
+  .delete(verifyToken, deleteUserCtr)
   .get(verifyToken, getSingleUserCtr);
 router.route("/removeJob/:id").delete(verifyToken, removeJobCtr);
 
