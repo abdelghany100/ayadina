@@ -16,13 +16,15 @@ const {
 
 const router = require("express").Router();
 
-router.route("/get-data-search").get(verifyToken , getDataForSearchCtr);
+router.route("/get-data-search").get(verifyToken, getDataForSearchCtr);
 router.route("/filter-data-search").get(verifyToken, getAllUserByFilterCtr);
-router.get("/", verifyTokenAndAdmin, getAllUserCtr);
 router
   .route("/")
+  .get(verifyTokenAndAdmin, getAllUserCtr)
+  .delete(verifyToken, deleteUserCtr);
+router
+  .route("/:id")
   .patch(verifyToken, updateUserCtr)
-  .delete(verifyToken, deleteUserCtr)
   .get(verifyToken, getSingleUserCtr);
 router.route("/removeJob/:id").delete(verifyToken, removeJobCtr);
 
