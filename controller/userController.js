@@ -320,3 +320,19 @@ module.exports.unblockUserCtr = catchAsyncErrors(async (req, res, next) => {
     data: { user },
   });
 });
+
+module.exports.getBlockedUsersCtr = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.user.id;
+
+  const user = await User.findById(userId).populate("blockedUsers", "name email profilePhoto");
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "Blocked users retrieved successfully",
+    data: user.blockedUsers,
+  });
+});
