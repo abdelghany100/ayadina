@@ -50,6 +50,12 @@ const UserSchema = new mongoose.Schema(
         message: "password and passwordConfirm are not the same",
       },
     },
+    blockedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     profilePhoto: {
       type: String,
       default:

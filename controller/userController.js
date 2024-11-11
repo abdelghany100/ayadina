@@ -43,14 +43,21 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
-
 module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
     const { location, job, city } = req.query;
+    const currentUserId = req.user.id; // معرف المستخدم الحالي
+
+    // جلب المستخدم الحالي وقائمة المستخدمين المحظورين
+    const currentUser = await User.findById(currentUserId).select(
+      "blockedUsers"
+    );
+    const blockedUsers = currentUser.blockedUsers || [];
 
     // بناء الفلتر بناءً على القيم المرسلة في الـ query
     const filter = {
-      jobs: { $exists: true, $ne: [] }, // المستخدمين الذين لديهم وظائف فقط
+      _id: { $nin: blockedUsers }, // استثناء المستخدمين المحظورين
+      jobs: { $exists: true, $ne: [] }, // جلب المستخدمين الذين لديهم وظائف فقط
     };
 
     if (location) {
@@ -106,7 +113,6 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
         )
       );
     }
-    console.log("llll");
 
     // إرجاع النتيجة
     return res.status(200).json({
@@ -188,14 +194,12 @@ module.exports.updateProfileImageCtr = catchAsyncErrors(
 );
 
 module.exports.deleteUserCtr = catchAsyncErrors(async (req, res, next) => {
-const userId= req.user.id
-console.log(`Delete user ${userId}`)
-  await Post.deleteMany({ userId },); 
+  const userId = req.user.id;
+  console.log(`Delete user ${userId}`);
+  await Post.deleteMany({ userId });
 
-  await Comment.deleteMany({user : userId }); 
+  await Comment.deleteMany({ user: userId });
   const user = await User.findByIdAndDelete(userId);
-
-  
 
   if (!user) {
     return next(new AppError("User not found", 404));
@@ -269,5 +273,50 @@ module.exports.removeJobCtr = catchAsyncErrors(async (req, res, next) => {
     data: {
       user,
     },
+  });
+});
+
+module.exports.blockUserCtr = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.user.id;
+  const { blockedUserId } = req.body;
+  console.log(blockedUserId);
+
+  const blockedUser = await User.findById(blockedUserId);
+  if (!blockedUser) {
+    return next(new AppError("User to be blocked not found", 404));
+  }
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { $addToSet: { blockedUsers: blockedUserId } },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "User blocked successfully",
+    data: { user },
+  });
+});
+
+module.exports.unblockUserCtr = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.user.id;
+  const { blockedUserId } = req.body;
+
+  const blockedUser = await User.findById(blockedUserId);
+  if (!blockedUser) {
+    return next(new AppError("User to be unblocked not found", 404));
+  }
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { $pull: { blockedUsers: blockedUserId } },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "User unblocked successfully",
+    data: { user },
   });
 });

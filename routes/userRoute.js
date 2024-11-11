@@ -7,6 +7,8 @@ const {
   updateProfileImageCtr,
   getAllUserCtr,
   removeJobCtr,
+  blockUserCtr,
+  unblockUserCtr,
 } = require("../controller/userController");
 const photoUpload = require("../middlewares/photoUpload");
 const {
@@ -31,5 +33,8 @@ router.route("/removeJob/:id").delete(verifyToken, removeJobCtr);
 router
   .route("/profile-photo")
   .post(verifyToken, photoUpload.single("image"), updateProfileImageCtr);
+  
+router.post("/block", verifyToken, blockUserCtr);
+router.post("/unblock", verifyToken, unblockUserCtr);
 
 module.exports = router;
