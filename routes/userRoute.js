@@ -10,6 +10,7 @@ const {
   blockUserCtr,
   unblockUserCtr,
   getBlockedUsersCtr,
+  deleteUserِAdminCtr,
 } = require("../controller/userController");
 const photoUpload = require("../middlewares/photoUpload");
 const {
@@ -36,7 +37,8 @@ router.get("/blocked-users", verifyToken, getBlockedUsersCtr);
 router
   .route("/:id")
   .patch(verifyToken, updateUserCtr)
-  .get(verifyToken, getSingleUserCtr);
+  .get(verifyToken, getSingleUserCtr)
+  .delete(verifyToken, deleteUserِAdminCtr);
 router.route("/removeJob/:id").delete(verifyToken, removeJobCtr);
 
 module.exports = router;

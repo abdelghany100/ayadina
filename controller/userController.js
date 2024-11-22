@@ -210,6 +210,23 @@ module.exports.deleteUserCtr = catchAsyncErrors(async (req, res, next) => {
     message: "User deleted successfully",
   });
 });
+module.exports.deleteUserِAdminCtr = catchAsyncErrors(async (req, res, next) => {
+  const userId = req.params.id;
+  console.log(`Delete user ${userId}`);
+  await Post.deleteMany({ userId });
+
+  await Comment.deleteMany({ user: userId });
+  const user = await User.findByIdAndDelete(userId);
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: "User deleted successfully",
+  });
+});
 
 module.exports.getSingleUserCtr = catchAsyncErrors(async (req, res, next) => {
   const userId = req.params.id;
