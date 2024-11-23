@@ -27,6 +27,6 @@ router
   .route("/:id")
   .patch(verifyTokenAndAdmin, updateLocation) // Update a location
   .delete(verifyTokenAndAdmin, deleteLocation) // Delete a location
-  .get(verifyToken, getLocation); // Get a single location
+  .get(verifyToken, getLocation); 
 
 module.exports = router;
