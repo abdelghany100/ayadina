@@ -43,10 +43,11 @@ module.exports.getDataForSearchCtr = catchAsyncErrors(
  * @method GET
  * @access privet (only login)
  -------------------------------------*/
-module.exports.getAllUserByFilterCtr = catchAsyncErrors(
+ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
   async (req, res, next) => {
     const { location, job, city } = req.query;
     const currentUserId = req.user.id; // معرف المستخدم الحالي
+    let notfoundUsers = false;
 
     // جلب المستخدم الحالي وقائمة المستخدمين المحظورين
     const currentUser = await User.findById(currentUserId).select(
@@ -73,7 +74,7 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
     }
 
     // البحث عن المستخدمين بناءً على الفلاتر
-    const users = await User.find(filter)
+    let users = await User.find(filter)
       .select("location jobs city profilePhoto name")
       .populate({
         path: "posts",
@@ -81,18 +82,22 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
         select: "image job", // جلب الصور والوظيفة فقط من البوستات
       });
 
-    // إذا لم يتم العثور على أي مستخدمين
+    // إذا لم يتم العثور على أي مستخدمين، جلب جميع المستخدمين مع صور بوستاتهم
     if (!users || users.length === 0) {
-      return next(
-        new AppError("No users found with the specified filters", 404)
-      );
+      users = await User.find({ _id: { $nin: blockedUsers } })
+        .select("location jobs city profilePhoto name")
+        .populate({
+          path: "posts",
+          select: "image job", // جلب الصور والوظيفة فقط من البوستات
+        });
+         notfoundUsers = true;
     }
 
     // دمج الصور من البوستات
     const usersWithImages = users.map((user) => {
-      const images = user.posts
-        .filter((post) => !job || post.job === job) // جلب الصور من البوستات مع تطابق الوظيفة إذا كانت محددة
-        .flatMap((post) => post.image.map((img) => img.url)); // جلب الروابط للصور
+      const images = user.posts.flatMap((post) =>
+        post.image.map((img) => img.url)
+      ); // جلب الروابط للصور
 
       return {
         ...user.toObject(),
@@ -101,23 +106,19 @@ module.exports.getAllUserByFilterCtr = catchAsyncErrors(
     });
 
     // التحقق من وجود صور للمستخدمين
-    const usersWithImagesResult = job
-      ? usersWithImages.filter((user) => user.images.length > 0)
-      : usersWithImages;
+    const usersWithImagesResult = usersWithImages.filter(
+      (user) => user.images.length > 0
+    );
 
+    // إذا لم يكن هناك مستخدمين مع صور، إرجاع رسالة خطأ
     if (usersWithImagesResult.length === 0) {
-      return next(
-        new AppError(
-          "No users found with matching posts for the given filters",
-          404
-        )
-      );
+      return next(new AppError("No users found with matching posts", 404));
     }
 
     // إرجاع النتيجة
     return res.status(200).json({
       status: "SUCCESS",
-      message: "Users found successfully",
+      message: notfoundUsers ? "لا يوجود مستخدمين بهذه الخصائص اليك كل المستخدمين" :  "Users found successfully",
       length: usersWithImagesResult.length,
       data: usersWithImagesResult,
     });

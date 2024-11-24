@@ -1,5 +1,6 @@
 // controllers/locationController.js
 const { Location } = require("../models/Location");
+const { User } = require("../models/User");
 const AppError = require("../utils/AppError");
 const catchAsyncErrors = require("../utils/catchAsyncErrors");
 
@@ -123,20 +124,40 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+// module.exports.getAlldistrict = catchAsyncErrors(async (req, res, next) => {
+//   const { city } = req.body;
+
+//   if (!city) {
+//     return res.status(400).json({ message: "City is required" });
+//   }
+
+//   const districts = await Location.find({ city })
+//     .select("district -_id") // للحصول على الحقل district فقط بدون الـ _id
+//     .lean() // لتحسين الأداء بإرجاع بيانات خفيفة بدون وظائف مرفقة
+
+//   if (!districts.length) {
+//     return res.status(404).json({ message: "No districts found for this city" });
+//   }
+
+//   res.status(200).json(districts);
+// })
 module.exports.getAlldistrict = catchAsyncErrors(async (req, res, next) => {
   const { city } = req.body;
 
   if (!city) {
     return res.status(400).json({ message: "City is required" });
   }
-
-  const districts = await Location.find({ city })
-    .select("district -_id") // للحصول على الحقل district فقط بدون الـ _id
+  
+  const users = await User.find({ city , jobs: { $exists: true, $ne: [] } })
+    .select("location -_id") // للحصول على الحقل district فقط بدون الـ _id
     .lean() // لتحسين الأداء بإرجاع بيانات خفيفة بدون وظائف مرفقة
-
-  if (!districts.length) {
+    
+  
+  if (!users.length) {
     return res.status(404).json({ message: "No districts found for this city" });
   }
-
-  res.status(200).json(districts);
+  const uniqueLocations = [
+    ...new Map(users.map(user => [user.location, { location: user.location }])).values()
+  ];
+  res.status(200).json(uniqueLocations);
 })
