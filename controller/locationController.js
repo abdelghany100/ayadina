@@ -157,7 +157,7 @@ module.exports.getAlldistrict = catchAsyncErrors(async (req, res, next) => {
     return res.status(404).json({ message: "No districts found for this city" });
   }
   const uniqueLocations = [
-    ...new Map(users.map(user => [user.location, { location: user.location }])).values()
+    ...new Map(users.map(user => [user.location, { district: user.location }])).values()
   ];
   res.status(200).json(uniqueLocations);
 })
