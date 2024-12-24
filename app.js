@@ -7,7 +7,9 @@ const cors = require("cors");
 const compression = require("compression");
 const { errorHandler, notFound } = require("./middlewares/error");
 const path = require("path");
+const dns = require("node:dns");
 
+dns.setServers(["8.8.4.4"]);
 const app = express();
 // إعداد محرك القوالب EJS
 app.set("view engine", "ejs");

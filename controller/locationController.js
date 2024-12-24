@@ -94,7 +94,7 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
  * @method GET
  * @access public
  -------------------------------------*/
- module.exports.getAllLocations = catchAsyncErrors(async (req, res, next) => {
+module.exports.getAllLocations = catchAsyncErrors(async (req, res, next) => {
   const locations = await Location.find();
 
   // Create arrays for cities and districts
@@ -113,9 +113,8 @@ module.exports.getLocation = catchAsyncErrors(async (req, res, next) => {
  * @method GET
  * @access public
  -------------------------------------*/
- module.exports.getLocationDash = catchAsyncErrors(async (req, res, next) => {
+module.exports.getLocationDash = catchAsyncErrors(async (req, res, next) => {
   const locations = await Location.find();
-
 
   res.status(200).json({
     status: "SUCCESS",
@@ -147,17 +146,20 @@ module.exports.getAlldistrict = catchAsyncErrors(async (req, res, next) => {
   if (!city) {
     return res.status(400).json({ message: "City is required" });
   }
-  
-  const users = await User.find({ city , jobs: { $exists: true, $ne: [] } })
+
+  const users = await User.find({ city, jobs: { $exists: true, $ne: [] } })
     .select("location -_id") // للحصول على الحقل district فقط بدون الـ _id
-    .lean() // لتحسين الأداء بإرجاع بيانات خفيفة بدون وظائف مرفقة
-    
-  
+    .lean(); // لتحسين الأداء بإرجاع بيانات خفيفة بدون وظائف مرفقة
+
   if (!users.length) {
-    return res.status(404).json({ message: "No districts found for this city" });
+    return res
+      .status(404)
+      .json({ message: "No districts found for this city" });
   }
   const uniqueLocations = [
-    ...new Map(users.map(user => [user.location, { district: user.location }])).values()
+    ...new Map(
+      users.map((user) => [user.location, { district: user.location }])
+    ).values(),
   ];
   res.status(200).json(uniqueLocations);
-})
+});
